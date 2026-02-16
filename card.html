@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Thiệp gửi em bé</title>
+
+  <!-- Fonts (cần internet) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg1:#fff1f5; --bg2:#ffe4e6;
+      --card:#ffffffcc; --text:#111827; --muted:#6b7280;
+      --accent:#fb7185; --shadow:0 20px 50px rgba(0,0,0,.12);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center;
+      font-family: "Quicksand", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 10%, var(--bg2), transparent 60%),
+        radial-gradient(1000px 700px at 80% 90%, var(--bg2), transparent 55%),
+        linear-gradient(135deg, var(--bg1), #fff);
+      padding:24px;
+      padding-bottom: 170px; /* ✅ chừa chỗ cho mini music bar */
+      position:relative;
+      overflow-x:hidden;
+    }
+
+    /* ✅ Overlay trái tim mờ */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      opacity:.10;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' viewBox='0 0 200 200'%3E%3Cpath d='M100 180s-70-40-70-90c0-25 20-45 45-45 15 0 25 8 25 8s10-8 25-8c25 0 45 20 45 45 0 50-70 90-70 90z' fill='%23fb7185'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 190px 190px;
+      filter: blur(.2px);
+      mix-blend-mode: multiply;
+    }
+
+    .wrap{max-width:860px; width:100%;}
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.7);
+      box-shadow:var(--shadow);
+      border-radius:var(--radius);
+      overflow:hidden;
+      backdrop-filter: blur(8px);
+      position:relative;
+      z-index:1;
+    }
+
+    header{
+      padding:28px 28px 12px;
+      display:flex; gap:16px; align-items:center; justify-content:space-between;
+    }
+
+    h1{
+      margin:0;
+      font-family: "Dancing Script", cursive;
+      font-size:40px;
+      letter-spacing:-.01em;
+      line-height:1.05;
+    }
+    .sub{color:var(--muted); margin-top:8px; line-height:1.6; font-weight:600}
+
+    .grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:18px; padding: 0 28px 28px;}
+    @media (max-width: 860px){
+      .grid{grid-template-columns:1fr}
+      header{flex-direction:column; align-items:flex-start}
+      body{padding-bottom: 190px;}
+    }
+
+    .letter{
+      background:#fff;
+      border-radius:18px;
+      padding:22px;
+      border:1px solid rgba(0,0,0,.06);
+    }
+    .content{margin-top:16px; line-height:1.9; font-size:16px}
+    .sign{margin-top:18px; font-weight:800}
+
+    .side{display:grid; gap:12px;}
+    .panel{
+      background:#fff;
+      border-radius:18px;
+      padding:16px;
+      border:1px solid rgba(0,0,0,.06);
+    }
+    .row{display:flex; justify-content:space-between; gap:10px; align-items:center}
+    .k{color:var(--muted); font-size:14px; font-weight:600}
+    .v{font-weight:800}
+    .hint{font-size:12px; color:var(--muted); text-align:center; font-weight:600}
+    .heart{font-size:20px}
+
+    .badgeBtn{
+      appearance:none;
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 14px; border-radius:999px;
+      background: rgba(251,113,133,.12);
+      border:1px solid rgba(251,113,133,.25);
+      color:#9f1239; font-weight:800;
+      cursor:pointer;
+      transition: transform .12s ease, filter .12s ease;
+      white-space:nowrap;
+    }
+    .badgeBtn:hover{filter: brightness(1.02)}
+    .badgeBtn:active{transform: translateY(1px)}
+    .badgeBtn:focus{outline: 3px solid rgba(251,113,133,.25); outline-offset: 3px}
+
+    #daysText{
+      font-family: "Dancing Script", cursive;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .2px;
+    }
+    #surpriseBtn
+    {
+       font-family: "Dancing Script", cursive;
+    }
+    .primaryBtn{
+      width:100%;
+      padding:12px 14px;
+      border-radius:14px;
+      border:0;
+      background:var(--accent);
+      color:white;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow: 0 14px 30px rgba(251,113,133,.35);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .primaryBtn:hover{filter: brightness(1.02)}
+    .primaryBtn:active{transform: translateY(1px) scale(.99)}
+
+    /* ===== Drawer album ===== */
+    .overlay{
+      position:fixed; inset:0;
+      background: rgba(17,24,39,.35);
+      backdrop-filter: blur(2px);
+      opacity:0; pointer-events:none;
+      transition: opacity .18s ease;
+      z-index:50;
+    }
+    .overlay.show{opacity:1; pointer-events:auto;}
+
+    .drawer{
+      position:fixed; top:0; right:0;
+      height:100vh;
+      width: min(460px, 92vw);
+      background: rgba(255,255,255,.92);
+      border-left: 1px solid rgba(0,0,0,.08);
+      box-shadow: -20px 0 60px rgba(0,0,0,.18);
+      transform: translateX(105%);
+      transition: transform .25s cubic-bezier(.2,.7,.2,1);
+      z-index:51;
+      display:flex; flex-direction:column;
+      padding:16px;
+    }
+    .drawer.open{transform: translateX(0);}
+
+    .drawerHeader{
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      padding:8px 4px 12px;
+    }
+    .drawerTitle{
+      display:flex; flex-direction:column;
+      gap:2px;
+    }
+    .drawerTitle b{font-size:18px}
+    .drawerTitle span{color:var(--muted); font-size:13px; font-weight:600}
+
+    .iconBtn{
+      appearance:none;
+      width:auto;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(17,24,39,.06);
+      color:#111827;
+      font-weight:900;
+      cursor:pointer;
+    }
+
+    .preview{
+      border-radius:18px;
+      border:1px solid rgba(0,0,0,.06);
+      overflow:hidden;
+      background:#fff;
+    }
+    .previewImg{
+      width:100%;
+      height: 240px;
+      object-fit: cover;
+      display:block;
+    }
+    .previewMeta{
+      padding:12px 12px 14px;
+      line-height:1.5;
+    }
+    .previewMeta .cap{font-weight:900}
+    .previewMeta .date{color:var(--muted); font-size:13px; font-weight:700; margin-top:4px}
+
+    .thumbs{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+      overflow:auto;
+      padding-bottom:8px;
+    }
+    .thumb{
+      appearance:none;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.08);
+      background:#fff;
+      padding:0;
+      overflow:hidden;
+      cursor:pointer;
+    }
+    .thumb img{
+      width:100%;
+      height:92px;
+      object-fit: cover;
+      display:block;
+    }
+    .thumb.active{
+      outline: 3px solid rgba(251,113,133,.25);
+      border-color: rgba(251,113,133,.35);
+    }
+
+    .drawerTip{
+      margin-top:auto;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      padding:10px 4px 4px;
+    }
+
+    .annivNote{
+      font-weight:700;
+      color: var(--muted);
+      font-size: 12px;
+      margin-left: 6px;
+      white-space: nowrap;
+    }
+
+    /* ===== ✅ Mini Music Bar (LUÔN THU NHỎ) ===== */
+    .musicBar{
+      position: fixed;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      width: min(860px, calc(100vw - 32px));
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.18);
+      z-index: 80;
+      padding: 10px 12px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 12px;
+    }
+
+    .musicMeta{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 0;
+    }
+    .musicTitle{ font-weight:1000; }
+    .musicSub{
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 520px;
+    }
+
+    .musicControls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-shrink:0;
+    }
+
+    .vol{
+      width: 140px;
+    }
+    @media (max-width: 520px){
+      .vol{width: 90px;}
+      .musicSub{max-width: 220px;}
+    }
+
+    /* Ẩn audio element (chỉ điều khiển bằng JS) */
+    #bgAudio{display:none;}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <header>
+        <div>
+          <h1>Gửi <span id="toName">Em</span> ✨</h1>
+          <div class="sub">Một bức thư nhỏ, nhưng là “cả bầu trời” của anh.</div>
+        </div>
+
+        <button class="badgeBtn" id="openMemories" type="button" aria-label="Mở kỷ niệm">
+          <span class="heart">💗</span>
+          <span id="daysText">…</span>
+        </button>
+      </header>
+
+      <div class="grid">
+        <section class="letter">
+          <div class="content" id="message">
+            Hôm nay anh làm một tấm thiệp nhỏ để nhắc em rằng: em quan trọng với anh nhiều lắm.
+            <br/><br/>
+            Cảm ơn em vì đã đến, vì đã ở lại, và vì đã làm những ngày bình thường trở nên dễ thương hơn.
+            <br/><br/>
+            Nếu em mệt, cứ tựa vào anh một chút nhé. Anh luôn ở đây.
+            <br/><br/>
+            Và khi mình chuẩn bị bước qua một năm mới, anh chỉ mong tụi mình vẫn nắm tay nhau thật chặt:
+            mình cùng nhau đi qua những ngày bận rộn, cùng nhau ăn một bữa ngon, cùng nhau cười nhiều hơn,
+            và cùng nhau bình yên hơn.
+            <br/><br/>
+            Năm mới đến, anh không hứa điều gì quá lớn… chỉ hứa sẽ thương em tử tế hơn mỗi ngày,
+            lắng nghe em nhiều hơn, và ở cạnh em nhiều hơn — theo cách mà em cần.
+            <br/><br/>
+            Chúc em một năm mới thật rực rỡ, thật nhẹ nhàng, và luôn được yêu thương.
+            Còn anh… anh chọn yêu em thêm một năm nữa. 💗
+          </div>
+          <div class="sign">— <span id="fromName">Anh</span></div>
+        </section>
+
+        <aside class="side">
+          <div class="panel">
+            <div class="row">
+              <div class="k">Ngày kỷ niệm</div>
+              <div class="v">
+                <span id="annivText"></span>
+                <span class="annivNote">(Mình lấy mốc ngày này nhé cục zàng)</span>
+              </div>
+            </div>
+            <div class="row" style="margin-top:8px">
+              <div class="k">Điều anh thích ở em</div>
+              <div class="v">Nụ cười, và những câu chuyện</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="k" style="margin-bottom:8px">Lời nhắn nhanh</div>
+            <button class="primaryBtn" id="surpriseBtn" type="button">Bấm để nhận “bí mật”</button>
+          </div>
+
+          <div class="panel">
+            <div class="k">Một lời thú tội nhỏ</div>
+            <div style="margin-top:8px; line-height:1.7; font-weight:700">
+              Anh thú thật là đôi lúc anh chưa đủ tinh tế,
+              có khi bận quá mà quên hỏi em hôm nay thế nào,
+              có khi nói ít hơn việc anh nghĩ nhiều.
+              <br/><br/>
+              Nhưng anh đang cố từng ngày để làm tốt hơn:
+              biết lắng nghe hơn, kiên nhẫn hơn,
+              và thương em đúng cách hơn — không chỉ bằng lời,
+              mà bằng cả hành động.
+              <br/><br/>
+              Nếu có lúc anh làm em buồn, cho anh xin một cơ hội để sửa nha.
+              Anh muốn trở thành phiên bản tốt hơn… vì em. 💗
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay + Drawer album -->
+  <div class="overlay" id="overlay"></div>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawerHeader">
+      <div class="drawerTitle">
+        <b>Album kỷ niệm</b>
+        <span id="memCount">0 tấm ảnh</span>
+      </div>
+      <button class="iconBtn" id="closeDrawer" type="button">✕</button>
+    </div>
+
+    <div class="preview">
+      <img class="previewImg" id="previewImg" alt="Ảnh kỷ niệm" />
+      <div class="previewMeta">
+        <div class="cap" id="previewCap">—</div>
+        <div class="date" id="previewDate">—</div>
+      </div>
+    </div>
+
+    <div class="thumbs" id="thumbs"></div>
+
+    <div class="drawerTip">Tip: bấm nền tối hoặc phím ESC để đóng.</div>
+  </aside>
+
+  <!-- ✅ Mini Music Bar (nhạc local từ folder music/) -->
+  <div class="musicBar" id="musicBar" aria-label="Trình phát nhạc (mini)">
+    <div class="musicMeta">
+      <div class="musicTitle">🎵 Nhạc nền</div>
+      <div class="musicSub" id="musicLabel">Nhạc từ folder /music (bấm Play)</div>
+    </div>
+
+    <div class="musicControls">
+      <button class="iconBtn" id="playPauseBtn" type="button">Play</button>
+      <input class="vol" id="vol" type="range" min="0" max="1" step="0.01" value="0.7" />
+    </div>
+
+    <!-- Nhạc local -->
+    <audio id="bgAudio" preload="auto" loop playsinline>
+      <source src="music/LÀ ANH - Cover Nhạc Ngoại Lời Việt by PHẠM LỊCH ( It’s You -Mộng Nhiên).mp3" type="audio/mpeg">
+    </audio>
+  </div>
+
+  <script>
+    // ✅ TÙY CHỈNH NHANH
+    const TO_NAME = "Bé iu";
+    const FROM_NAME = "Anh Bé";
+    const ANNIVERSARY = "2025-12-25"; // yyyy-mm-dd
+    const SECRET = "Anh thương em nhiều hơn em tưởng đó 🥺💗";
+
+    // ✅ ẢNH KỶ NIỆM (ảnh local trong folder pictures/)
+    const MEMORIES = [
+      { src: "pictures/41d133d7-17e1-4642-85c2-b83a8228d898.jpg", caption: "Valentine đầu tiên tiên của hai đứa", date: "14/02/2026" },
+      { src: "pictures/56b6299f-82a2-48fc-bd33-448497152ba4.jpg", caption: "Ảnh nữa nè", date: "14/02/2026" },
+      { src: "pictures/61af34c5-0ad4-4b8b-94d4-e6e1c66e2744.jpg", caption: "Đây nữa", date: "14/02/2026" },
+      { src: "pictures/39941790-ba31-4f44-b16b-eee0e788480d.jpg", caption: "Tụi tui đi zũng tàu", date: "08/02/2026" },
+      { src: "pictures/86663718-0276-4f82-8964-eb87381df988.jpg", caption: "Ảnh đây nữa", date: "08/02/2026" },
+    ];
+
+    // render name
+    document.getElementById("toName").textContent = TO_NAME;
+    document.getElementById("fromName").textContent = FROM_NAME;
+
+    // show anniv dd/mm/yyyy
+    const d = new Date(ANNIVERSARY + "T00:00:00");
+    const dd = String(d.getDate()).padStart(2,"0");
+    const mm = String(d.getMonth()+1).padStart(2,"0");
+    const yy = d.getFullYear();
+    document.getElementById("annivText").textContent = `${dd}/${mm}/${yy}`;
+
+    // days counter
+    const now = new Date();
+    const diff = Math.floor((now - d) / (1000*60*60*24));
+    document.getElementById("daysText").textContent =
+      diff >= 0 ? `Mình bên nhau ${diff} ngày` : `Còn ${Math.abs(diff)} ngày nữa`;
+
+    // secret
+    document.getElementById("surpriseBtn").addEventListener("click", () => {
+      alert(SECRET);
+    });
+
+    // =========================
+    // ✅ Drawer album logic
+    // =========================
+    const overlay = document.getElementById("overlay");
+    const drawer = document.getElementById("drawer");
+    const openMemories = document.getElementById("openMemories");
+    const closeDrawer = document.getElementById("closeDrawer");
+
+    const thumbs = document.getElementById("thumbs");
+    const memCount = document.getElementById("memCount");
+    const previewImg = document.getElementById("previewImg");
+    const previewCap = document.getElementById("previewCap");
+    const previewDate = document.getElementById("previewDate");
+
+    function openDrawer(){
+      overlay.classList.add("show");
+      drawer.classList.add("open");
+      drawer.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+    function closeDrawerFn(){
+      overlay.classList.remove("show");
+      drawer.classList.remove("open");
+      drawer.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    }
+
+    openMemories.addEventListener("click", openDrawer);
+    closeDrawer.addEventListener("click", closeDrawerFn);
+    overlay.addEventListener("click", closeDrawerFn);
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape") closeDrawerFn();
+    });
+
+    function setPreview(idx){
+      const item = MEMORIES[idx];
+      if(!item) return;
+      previewImg.src = item.src;
+      previewCap.textContent = item.caption || "Kỷ niệm";
+      previewDate.textContent = item.date || "";
+      [...thumbs.querySelectorAll(".thumb")].forEach((b, i) => {
+        b.classList.toggle("active", i === idx);
+      });
+    }
+
+    function renderMemories(){
+      memCount.textContent = `${MEMORIES.length} tấm ảnh`;
+      thumbs.innerHTML = "";
+      MEMORIES.forEach((m, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "thumb";
+        btn.innerHTML = `<img src="${m.src}" alt="${m.caption || "Ảnh kỷ niệm"}">`;
+        btn.addEventListener("click", () => setPreview(idx));
+        thumbs.appendChild(btn);
+      });
+      setPreview(0);
+    }
+    renderMemories();
+
+    // =========================
+    // ✅ Mini Music (LOCAL) logic
+    // =========================
+    const audio = document.getElementById("bgAudio");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const vol = document.getElementById("vol");
+    const musicLabel = document.getElementById("musicLabel");
+
+    // đổi tên file nếu bạn đặt khác
+    // audio.src = "music/la-anh.mp3"; // (không cần nếu đã set <source>)
+
+    audio.volume = Number(vol.value || 0.7);
+
+    vol.addEventListener("input", () => {
+      audio.volume = Number(vol.value);
+    });
+
+    async function tryPlay(){
+      try{
+        await audio.play();
+        playPauseBtn.textContent = "Pause";
+        musicLabel.textContent = "Đang phát (nhạc local)";
+      }catch{
+        // autoplay bị chặn -> user bấm Play sẽ được
+        musicLabel.textContent = "Trình duyệt chặn tự phát — bấm Play 1 lần nhé";
+      }
+    }
+
+    playPauseBtn.addEventListener("click", async () => {
+      if (audio.paused) {
+        await tryPlay();
+      } else {
+        audio.pause();
+        playPauseBtn.textContent = "Play";
+        musicLabel.textContent = "Đã tạm dừng";
+      }
+    });
+
+    audio.addEventListener("pause", () => playPauseBtn.textContent = "Play");
+    audio.addEventListener("play",  () => playPauseBtn.textContent = "Pause");
+
+    // ✅ Tự phát sau “click đầu tiên” ở bất kỳ đâu (không vi phạm chặn autoplay)
+    document.addEventListener("click", () => {
+      if (audio.paused) tryPlay();
+    }, { once: true });
+  </script>
+</body>
+</html>
